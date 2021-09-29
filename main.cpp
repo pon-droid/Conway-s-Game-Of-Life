@@ -1,15 +1,26 @@
 #include <iostream>
 
 using namespace std;
-//TODO: This only works with square board sizes
+//[DONE]TODO: This only works with square board sizes
 
-int** allocate_board(const int B_WIDTH, const int B_HEIGHT ){
-
+int** allocate_board(const int B_WIDTH){
+/*
+ *Old code (obselete)
     int** board_state = new int*[B_WIDTH];
     for (int i = 0; i < B_HEIGHT; ++i)
     {
        board_state[i] = new int[B_HEIGHT];
     }
+    */
+    int** board_state = new int*[B_WIDTH];
+
+    for (int i = 0; i < B_WIDTH; i++) {
+
+        // Declare a memory block
+        // of size B_HEIGHT
+        board_state[i] = new int[B_WIDTH];
+    }
+
     return board_state;
 }
 
@@ -31,16 +42,19 @@ void print_board(int** board_state, const int B_WIDTH, const int B_HEIGHT){
 
 int main()
 {
-    const int B_WIDTH = 10;
-    const int B_HEIGHT = 10;
+    const int B_WIDTH = 7;
+    const int B_HEIGHT = 5;
 
     // Create 2D array by passing a pointer to a pointer
-    int** board_state = allocate_board(B_WIDTH, B_HEIGHT);
+    int** board_state = allocate_board(B_WIDTH);
     // Initialise whole array with value 0 for memory safety
     dead_state(board_state, B_WIDTH, B_HEIGHT);
     // Output array
     print_board(board_state, B_WIDTH, B_HEIGHT);
     // Deallocate memory
+    for(int i = 0; i < B_WIDTH; i++){
+    delete[] board_state[i];
+    }
     delete[] board_state;
     return 0;
 }
