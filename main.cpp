@@ -34,10 +34,11 @@ void random_state(int** board_state, const int B_WIDTH, const int B_HEIGHT){
     }
 }
 
-int next_board_state(int** board_state, const int B_WIDTH, const int B_HEIGHT){
-    int count = 0;
+void next_board_state(int** board_state, const int B_WIDTH, const int B_HEIGHT){
+
     for (int x = 0; x<B_WIDTH; x++){
             for (int y = 0; y<B_HEIGHT; y++){
+                int count = 0;
                for(int row = -1; row<= 1; row++){
                  for(int col = -1; col<= 1; col++){
                      int current_x = x + row;
@@ -49,9 +50,20 @@ int next_board_state(int** board_state, const int B_WIDTH, const int B_HEIGHT){
                      }
                  }
              }
+               if(count < 2){
+                   board_state[x][y] = 0;
+               }
+               if(count == 3){
+                   board_state[x][y] = 1;
+               }
+               if(count > 3){
+                   board_state[x][y] = 0;
+               }
+               if(board_state[x][y] == 1 && count == 2){
+                   board_state[x][y] = 1;
+               }
          }
     }
-    return count;
 }
 
 
@@ -68,8 +80,8 @@ void print_board(int** board_state, const int B_WIDTH, const int B_HEIGHT){
 int main()
 {
     srand(time(NULL));
-    const int B_WIDTH = 10;
-    const int B_HEIGHT = 10;
+    const int B_WIDTH = 50;
+    const int B_HEIGHT = 50;
 
     // Create 2D pointer array
 
@@ -89,9 +101,13 @@ int main()
     print_board(board_state, B_WIDTH, B_HEIGHT);
 
     cout << "=================================================" << endl;
-    //Counts the living neighbours of every alive cell
-    cout << next_board_state(board_state, B_WIDTH, B_HEIGHT);
 
+    int** temp_board_state = board_state;
+
+    //Counts the living neighbours of every alive cell
+    next_board_state(temp_board_state, B_WIDTH, B_HEIGHT);
+    cout << endl;
+    print_board(temp_board_state, B_WIDTH, B_HEIGHT);
 
     // Deallocate memory
 
