@@ -1,32 +1,68 @@
 #include <iostream>
-#include <time.h>
+#include "unistd.h"
 
 using namespace std;
-//[DONE]TODO: This only works with square board sizes
 
-int** allocate_board(const int B_WIDTH, const int B_HEIGHT){
+const int B_WIDTH = 36;
+const int B_HEIGHT = 143;
 
-    int** board_state = new int*[B_WIDTH];
-
-    for (int i = 0; i < B_WIDTH; i++) {
-
-        // Declare a memory block
-        // of size B_HEIGHT
-        board_state[i] = new int[B_HEIGHT];
+void next_board_state(int board_state[B_WIDTH][B_HEIGHT], int temp_board_state[B_WIDTH][B_HEIGHT]){
+    //Copy board state to temporary board to get neighbour count from
+    for(int i = 0; i < B_WIDTH; i++){
+        for(int j = 0; j < B_HEIGHT; j++){
+            temp_board_state[i][j] = board_state[i][j];
+        }
     }
 
-    return board_state;
-}
+    for(int x = 0; x < B_WIDTH; x++){
+        for(int y = 0; y < B_HEIGHT; y++){
+            int neighbour_count = 0;
 
-void dead_state(int** board_state, const int B_WIDTH, const int B_HEIGHT){
-    for (int x = 0; x<B_WIDTH; x++){
-            for (int y = 0; y<B_HEIGHT; y++){
-             board_state[x][y] = 0;
+
+            //Get neighbour count relative to cell
+            for(int row = -1; row<=1; row++){
+                for(int col = -1; col<=1; col++){
+                    int current_x = x + row;
+                    int current_y = y + col;
+                    //Conditons for which to NOT get neighbour count, (when out of range of board or same cell)
+                    if (!(current_x < 0 || current_x >= B_WIDTH || current_y < 0 || current_y >= B_HEIGHT ||(row == 0 && col == 0))){
+                       if(temp_board_state[current_x][current_y] == 1){
+                           neighbour_count++;
+                       }
+                }
+            }
+
+        }
+            //Apply rules of Conway's Game Of Life
+            if(neighbour_count < 2){
+                board_state[x][y] = 0;
+            }
+            if(neighbour_count == 3){
+                board_state[x][y] = 1;
+            }
+            if(neighbour_count > 3){
+                board_state[x][y] = 0;
+            }
+            if(temp_board_state[x][y] == 1 && neighbour_count == 2){
+                board_state[x][y] = 1;
             }
     }
 }
+}
 
-void random_state(int** board_state, const int B_WIDTH, const int B_HEIGHT){
+void print_board(int board_state[B_WIDTH][B_HEIGHT]){
+    system("clear");
+    for (int x = 0; x<B_WIDTH; x++){
+            for (int y = 0; y<B_HEIGHT; y++){
+             if(board_state[x][y] == 0){cout << " ";}
+             else{cout << "\033[1;34m0\033[0m";}
+            }
+    cout << endl;
+    }
+
+}
+
+void random_state(int board_state[B_WIDTH][B_HEIGHT]){
     for (int x = 0; x<B_WIDTH; x++){
             for (int y = 0; y<B_HEIGHT; y++){
              board_state[x][y] = rand() % 2;
@@ -34,87 +70,25 @@ void random_state(int** board_state, const int B_WIDTH, const int B_HEIGHT){
     }
 }
 
-void next_board_state(int** board_state, const int B_WIDTH, const int B_HEIGHT){
-
-    for (int x = 0; x<B_WIDTH; x++){
-            for (int y = 0; y<B_HEIGHT; y++){
-                int count = 0;
-               for(int row = -1; row<= 1; row++){
-                 for(int col = -1; col<= 1; col++){
-                     int current_x = x + row;
-                     int current_y = y + col;
-                     if (current_x >= 0 && current_x < B_WIDTH && current_y >= 0 && current_y < B_HEIGHT){
-                        if(board_state[current_x][current_y] == 1){
-                            count++;
-                        }
-                     }
-                 }
-             }
-               if(count < 2){
-                   board_state[x][y] = 0;
-               }
-               if(count == 3){
-                   board_state[x][y] = 1;
-               }
-               if(count > 3){
-                   board_state[x][y] = 0;
-               }
-               if(board_state[x][y] == 1 && count == 2){
-                   board_state[x][y] = 1;
-               }
-         }
-    }
-}
-
-
-void print_board(int** board_state, const int B_WIDTH, const int B_HEIGHT){
-    for (int x = 0; x<B_WIDTH; x++){
-            for (int y = 0; y<B_HEIGHT; y++){
-             if(board_state[x][y] == 0){cout << ' ';}
-             else{cout << '#';}
-            }
-            cout << endl;
-    }
-}
 
 int main()
 {
-    srand(time(NULL));
-    const int B_WIDTH = 50;
-    const int B_HEIGHT = 50;
+    //Board_state
+    int board_state[B_WIDTH][B_HEIGHT];
+    //Temporary state to read off for update function
+    int temp_board_state[B_WIDTH][B_HEIGHT];
+    //Randomize board_state cells
+    random_state(board_state);
 
-    // Create 2D pointer array
+    while(true){
 
-    int** board_state = allocate_board(B_WIDTH, B_HEIGHT);
+        next_board_state(board_state,temp_board_state);
 
-    // Initialise whole array with value 0
-
-    dead_state(board_state, B_WIDTH, B_HEIGHT);
-
-    print_board(board_state, B_WIDTH, B_HEIGHT);
-    cout << endl;
-
-    // Randomize board between 0 and 1
-
-    random_state(board_state, B_WIDTH, B_HEIGHT);
-
-    print_board(board_state, B_WIDTH, B_HEIGHT);
-
-    cout << "=================================================" << endl;
-
-    int** temp_board_state = board_state;
-
-    //Counts the living neighbours of every alive cell
-    next_board_state(temp_board_state, B_WIDTH, B_HEIGHT);
-    cout << endl;
-    print_board(temp_board_state, B_WIDTH, B_HEIGHT);
-
-    // Deallocate memory
-
-    for(int i = 0; i < B_WIDTH; i++){
-    delete[] board_state[i];
+        print_board(board_state);
+        //Delay terminal
+        usleep(30000);
     }
-    delete[] board_state;
+
 
     return 0;
 }
