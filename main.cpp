@@ -1,5 +1,6 @@
 #include <iostream>
-#include "unistd.h"
+#include <unistd.h>
+#include <time.h>
 
 using namespace std;
 
@@ -73,6 +74,7 @@ void random_state(int board_state[B_WIDTH][B_HEIGHT]){
 
 int main()
 {
+    srand(time(NULL));
     //Board_state
     int board_state[B_WIDTH][B_HEIGHT];
     //Temporary state to read off for update function
