@@ -1,11 +1,14 @@
 #include <iostream>
 #include <unistd.h>
 #include <time.h>
+#include <SDL.h>
 
 using namespace std;
 
-const int B_WIDTH = 36;
-const int B_HEIGHT = 143;
+const int B_WIDTH = 600;
+const int B_HEIGHT = 600;
+
+ int B_S = 2;
 
 void next_board_state(int board_state[B_WIDTH][B_HEIGHT], int temp_board_state[B_WIDTH][B_HEIGHT]){
     //Copy board state to temporary board to get neighbour count from
@@ -52,7 +55,7 @@ void next_board_state(int board_state[B_WIDTH][B_HEIGHT], int temp_board_state[B
 }
 
 void print_board(int board_state[B_WIDTH][B_HEIGHT]){
-    system("clear");
+
     for (int x = 0; x<B_WIDTH; x++){
             for (int y = 0; y<B_HEIGHT; y++){
              if(board_state[x][y] == 0){cout << " ";}
@@ -63,12 +66,28 @@ void print_board(int board_state[B_WIDTH][B_HEIGHT]){
 
 }
 
+
+
 void random_state(int board_state[B_WIDTH][B_HEIGHT]){
     for (int x = 0; x<B_WIDTH; x++){
             for (int y = 0; y<B_HEIGHT; y++){
              board_state[x][y] = rand() % 2;
             }
     }
+}
+
+
+
+bool quit_event(){
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+
+            return false;
+        }
+    }
+    return true;
 }
 
 
@@ -82,15 +101,63 @@ int main()
     //Randomize board_state cells
     random_state(board_state);
 
+    SDL_Window *mainwindow = SDL_CreateWindow("Window", SDL_WINDOWPOS_UNDEFINED,
+    SDL_WINDOWPOS_UNDEFINED, 1920, 1080, SDL_WINDOW_RESIZABLE);
+    SDL_Renderer *mainrenderer = SDL_CreateRenderer(mainwindow, -1,
+            SDL_RENDERER_PRESENTVSYNC);
+
     while(true){
 
         next_board_state(board_state,temp_board_state);
 
-        print_board(board_state);
-        //Delay terminal
-        usleep(30000);
-    }
+        SDL_SetRenderDrawColor(mainrenderer,0,0,255,255);
 
+        SDL_RenderClear(mainrenderer);
+
+         SDL_SetRenderDrawColor(mainrenderer,0,255,255,255);
+        if(quit_event() == false){break;}
+        SDL_Rect rect;
+        rect.w = B_S;
+        rect.h = B_S;
+        for(int y = 0; y < B_HEIGHT; y++){
+            rect.y = 0 + (y * B_S);
+            for(int x = 0; x < B_WIDTH; x++){
+                rect.x = 0 + (x * B_S);
+                if(board_state[x][y] == 1){
+                    SDL_RenderFillRect(mainrenderer,&rect);
+                }
+            }
+        }
+
+
+
+
+        SDL_RenderPresent(mainrenderer);
+        const Uint8* currentKeyStates = SDL_GetKeyboardState( NULL );
+        /*
+        const Uint32* mousePos = SDL_GetMouseState(&mouseX,&mouseY);
+        */
+
+        if( currentKeyStates[SDL_SCANCODE_UP]){
+            B_S += 1;
+        }
+        if( currentKeyStates[SDL_SCANCODE_DOWN]){
+            B_S -= 1;
+        }
+        if( currentKeyStates[SDL_SCANCODE_X]){
+            random_state(board_state);
+        }
+
+        if(quit_event() == false){
+            break;
+        }
+        //Delay terminal
+
+    }
+    SDL_DestroyRenderer(mainrenderer);
+
+    SDL_DestroyWindow(mainwindow);
+    SDL_Quit();
 
     return 0;
 }
